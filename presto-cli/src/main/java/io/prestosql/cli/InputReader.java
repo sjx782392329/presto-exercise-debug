@@ -33,6 +33,7 @@ import static org.jline.reader.LineReader.Option.HISTORY_TIMESTAMPED;
 import static org.jline.reader.LineReader.SECONDARY_PROMPT_PATTERN;
 import static org.jline.utils.AttributedStyle.BRIGHT;
 import static org.jline.utils.AttributedStyle.DEFAULT;
+import static org.jline.utils.AttributedStyle.GREEN;
 
 public class InputReader
         implements Closeable
@@ -86,6 +87,6 @@ public class InputReader
 
     private static String colored(String value)
     {
-        return new AttributedString(value, DEFAULT.foreground(BRIGHT)).toAnsi();
+        return new AttributedString(value, DEFAULT.foreground(GREEN)).toAnsi();
     }
 }

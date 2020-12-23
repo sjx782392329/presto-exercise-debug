@@ -57,6 +57,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import java.net.URI;
+import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -166,20 +167,35 @@ public class QueuedStatementResource
             @Context HttpHeaders httpHeaders,
             @Context UriInfo uriInfo)
     {
+
         if (isNullOrEmpty(statement)) {
             throw badRequest(BAD_REQUEST, "SQL statement is empty");
         }
 
         String remoteAddress = servletRequest.getRemoteAddr();
+        System.out.println("========" + remoteAddress + new Date());
+        System.out.println("servletRequest 的内容是: " + servletRequest.toString() + new Date());
+        System.out.println("========");
+        System.out.println("AUTHENTICATED_IDENTITY 的内容是" + servletRequest.getAttribute(AUTHENTICATED_IDENTITY));
         Optional<Identity> identity = Optional.ofNullable((Identity) servletRequest.getAttribute(AUTHENTICATED_IDENTITY));
         MultivaluedMap<String, String> headers = httpHeaders.getRequestHeaders();
-
+        System.out.println("headers 的值是: " + headers.values().toString() + new Date());
         SessionContext sessionContext = new HttpRequestSessionContext(headers, remoteAddress, identity, groupProvider);
+        System.out.println("========");
+        System.out.println("sessionContext 的内容是: " + sessionContext.toString() + new Date());
+        System.out.println("========");
         Query query = new Query(statement, sessionContext, dispatchManager);
+        System.out.println("query 的内容是: " + query.toString() + new Date());
+        System.out.println("========");
         queries.put(query.getQueryId(), query);
 
         // let authentication filter know that identity lifecycle has been handed off
         servletRequest.setAttribute(AUTHENTICATED_IDENTITY, null);
+        System.out.println("uriInfo 的内容是: ");
+        System.out.println(uriInfo.getAbsolutePath());
+        System.out.println(uriInfo.getBaseUri());
+        System.out.println(uriInfo.getRequestUri());
+        System.out.println(uriInfo.getPath());
 
         return Response.ok(query.getQueryResults(query.getLastToken(), uriInfo)).build();
     }
@@ -357,14 +373,20 @@ public class QueuedStatementResource
         public QueryResults getQueryResults(long token, UriInfo uriInfo)
         {
             long lastToken = this.lastToken.get();
+            System.out.println("token 是 " + token);
+            System.out.println("lastToken 是 " + lastToken);
             // token should be the last token or the next token
             if (token != lastToken && token != lastToken + 1) {
                 throw new WebApplicationException(Response.Status.GONE);
             }
             // advance (or stay at) the token
             this.lastToken.compareAndSet(lastToken, token);
-
+            System.out.println("lastToken 被设置成 " + lastToken);
             synchronized (this) {
+                System.out.println("执行了 sync");
+                if (querySubmissionFuture == null) {
+
+                }
                 // if query submission has not finished, return simple empty result
                 if (querySubmissionFuture == null || !querySubmissionFuture.isDone()) {
                     return createQueryResults(
@@ -373,7 +395,7 @@ public class QueuedStatementResource
                             DispatchInfo.queued(NO_DURATION, NO_DURATION));
                 }
             }
-
+            System.out.println("389 行被执行到了");
             Optional<DispatchInfo> dispatchInfo = dispatchManager.getDispatchInfo(queryId);
             if (dispatchInfo.isEmpty()) {
                 // query should always be found, but it may have just been determined to be abandoned
@@ -381,7 +403,7 @@ public class QueuedStatementResource
                         .status(NOT_FOUND)
                         .build());
             }
-
+            System.out.println("401 行被执行了");
             return createQueryResults(token + 1, uriInfo, dispatchInfo.get());
         }
 
@@ -398,7 +420,7 @@ public class QueuedStatementResource
         private QueryResults createQueryResults(long token, UriInfo uriInfo, DispatchInfo dispatchInfo)
         {
             URI nextUri = getNextUri(token, uriInfo, dispatchInfo);
-
+            System.out.println("nextUri 是" + nextUri.toString());
             Optional<QueryError> queryError = dispatchInfo.getFailureInfo()
                     .map(this::toQueryError);
 

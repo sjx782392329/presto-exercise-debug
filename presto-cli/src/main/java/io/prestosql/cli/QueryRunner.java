@@ -160,8 +160,8 @@ public class QueryRunner
             Optional<String> password)
     {
         if (user.isPresent() && password.isPresent()) {
-            checkArgument(session.getServer().getScheme().equalsIgnoreCase("https"),
-                    "Authentication using username/password requires HTTPS to be enabled");
+            //checkArgument(session.getServer().getScheme().equalsIgnoreCase("https"),
+                    //"Authentication using username/password requires HTTPS to be enabled");
             clientBuilder.addInterceptor(basicAuth(user.get(), password.get()));
         }
     }

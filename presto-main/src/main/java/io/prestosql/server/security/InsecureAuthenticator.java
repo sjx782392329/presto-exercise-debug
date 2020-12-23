@@ -43,6 +43,8 @@ public class InsecureAuthenticator
     public Identity authenticate(ContainerRequestContext request)
             throws AuthenticationException
     {
+        System.out.print("request 的 header 头是 : ");
+        System.out.println(request.getHeaders().values());
         Optional<BasicAuthCredentials> basicAuthCredentials = extractBasicAuthCredentials(request);
 
         String user;

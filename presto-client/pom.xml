@@ -24,6 +24,12 @@
 
         <dependency>
             <groupId>io.airlift</groupId>
+            <artifactId>log</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>io.airlift</groupId>
             <artifactId>security</artifactId>
         </dependency>
 
@@ -67,6 +73,7 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp-urlconnection</artifactId>
         </dependency>
+
 
         <!-- for testing -->
         <dependency>

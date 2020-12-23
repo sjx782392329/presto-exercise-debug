@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import io.airlift.json.JsonCodec;
+import io.airlift.log.Logger;
 import io.airlift.units.Duration;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -114,6 +115,7 @@ class StatementClientV1
     private final String clientCapabilities;
 
     private final AtomicReference<State> state = new AtomicReference<>(State.RUNNING);
+    private static final Logger LOG = Logger.get(StatementClientV1.class);
 
     public StatementClientV1(OkHttpClient httpClient, ClientSession session, String query)
     {
@@ -130,6 +132,7 @@ class StatementClientV1
         this.clientCapabilities = Joiner.on(",").join(ClientCapabilities.values());
 
         Request request = buildQueryRequest(session, query);
+        LOG.info("request 的 headers 是: " + request.headers().toString());
 
         JsonResponse<QueryResults> response = JsonResponse.execute(QUERY_RESULTS_CODEC, httpClient, request);
         if ((response.getStatusCode() != HTTP_OK) || !response.hasValue()) {

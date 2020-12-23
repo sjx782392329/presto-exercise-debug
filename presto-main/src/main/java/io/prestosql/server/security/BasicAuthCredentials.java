@@ -42,6 +42,7 @@ public class BasicAuthCredentials
         // This handles HTTP basic auth per RFC 7617. The header contains the
         // case-insensitive "Basic" scheme followed by a Base64 encoded "user:pass".
         String header = nullToEmpty(request.getHeaders().getFirst(AUTHORIZATION));
+        System.out.println("request 中 header 的内容是: " + header);
 
         return extractBasicAuthCredentials(header);
     }

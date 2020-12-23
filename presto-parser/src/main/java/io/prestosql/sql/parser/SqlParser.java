@@ -113,8 +113,10 @@ public class SqlParser
     private Node invokeParser(String name, String sql, Function<SqlBaseParser, ParserRuleContext> parseFunction, ParsingOptions parsingOptions)
     {
         try {
+            // 词法分析器进行词法分析，产生 token 序列   CaseInsensitiveStream 忽略大小写
             SqlBaseLexer lexer = new SqlBaseLexer(new CaseInsensitiveStream(CharStreams.fromString(sql)));
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+            // 语法分析器
             SqlBaseParser parser = new SqlBaseParser(tokenStream);
             initializer.accept(lexer, parser);
 
@@ -134,7 +136,7 @@ public class SqlParser
                     }
                 }
             });
-
+            // 语法分析器上，添加异常的监听器 PostProcessor
             parser.addParseListener(new PostProcessor(Arrays.asList(parser.getRuleNames()), parser));
 
             lexer.removeErrorListeners();
@@ -148,7 +150,7 @@ public class SqlParser
             else {
                 parser.addErrorListener(LEXER_ERROR_LISTENER);
             }
-
+            // 生成抽象语法树
             ParserRuleContext tree;
             try {
                 // first, try parsing with potentially faster SLL mode
@@ -163,7 +165,7 @@ public class SqlParser
                 parser.getInterpreter().setPredictionMode(PredictionMode.LL);
                 tree = parseFunction.apply(parser);
             }
-
+            // Presto 使用 Visitor 模式对 SQL 语句生成的语法树进行语法分析
             return new AstBuilder(parsingOptions).visit(tree);
         }
         catch (StackOverflowError e) {
